@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>复利的力量 - 财富增长模拟器</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet"> -->
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -95,7 +96,8 @@
                     发现<span class="text-primary">复利</span>的惊人力量
                 </h1>
                 <p class="text-[clamp(1rem,2vw,1.25rem)] text-gray-600 mb-8 max-w-2xl mx-auto">
-                    时间+复利=财富增长的奇迹。通过我们的交互式计算器，直观感受长期投资的魅力，规划您的财富未来。
+                    时间+复利=财富增长的奇迹。<br>
+                    通过我们的交互式计算器，直观感受长期投资的魅力，规划您的财富未来。
                 </p>
                 <div class="flex flex-col sm:flex-row justify-center gap-4">
                     <a href="#calculator" class="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-8 rounded-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-primary/30">
@@ -366,7 +368,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="bg-gray-50 p-6 rounded-lg text-center transform transition-all hover:scale-105 hover:shadow-lg">
                             <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i class="fa fa-clock-o text-primary text-2xl"></i>
+                                <!-- <i class="fa fa-clock-o text-primary text-2xl"></i> -->
+                                <i class="fa-solid fa-clock text-primary text-2xl"></i>
                             </div>
                             <h4 class="font-semibold mb-2">时间</h4>
                             <p class="text-gray-600 text-sm">
@@ -456,7 +459,7 @@
                             直观展示复利的力量，帮助您理解长期投资的价值，规划您的财富增长路径。
                         </p>
                     </div>
-                    
+
                     <div>
                         <h4 class="text-lg font-semibold mb-4">快速链接</h4>
                         <ul class="space-y-2 text-gray-400">
@@ -467,15 +470,22 @@
                     </div>
                     
                     <div>
-                        <h4 class="text-lg font-semibold mb-4">免责声明</h4>
-                        <p class="text-gray-400 text-sm">
-                            本计算器仅作投资教育用途，所提供数据仅供参考，不构成任何投资建议。实际投资收益可能因市场波动等因素而有所不同。
-                        </p>
+                        <h4 class="text-lg font-semibold mb-4">联系我们</h4>
+                        <div class="flex items-center space-x-4">
+                            <a href="https://github.com/eluo7" target="_blank" class="text-gray-400 hover:text-gray-600 transition-colors">
+                                <i class="fa-brands fa-github text-2xl"></i>
+                                <span>eluo7</span>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-green-600 transition-colors">
+                                <i class="fa-brands fa-weixin  text-2xl"></i>
+                                <span>hashpulse</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
-                    <p>© 2025 Hash Studio | 发现复利的力量</p>
+                    <p>© 2025 Hash Studio, Inc | 发现复利的力量</p>
                 </div>
             </div>
         </div>
@@ -1035,6 +1045,7 @@
                                 text: '累积金额 (元)'
                             },
                             ticks: {
+                                // stepSize: 500000, // 每500000元显示一个tick
                                 callback: function(value) {
                                     if (value >= 10000) {
                                         return (value / 10000) + '万';
