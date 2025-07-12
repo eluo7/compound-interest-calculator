@@ -354,7 +354,7 @@
                     </div>
                     
                     <div class="relative">
-                        <div class="aspect-square max-w-md mx-auto relative z-10">
+                        <div class="aspect-square max-w-md mx-auto relative">
                             <canvas id="compoundInterestIllustration"></canvas>
                         </div>
                         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-primary/10 rounded-full -z-10"></div>
@@ -777,31 +777,31 @@
                             stack: 'Stack 0'
                         },
                         {
-                            label: '第一年利息',
+                            label: '第1年利息',
                             data: [0, 800, 800, 800, 800, 800],
                             backgroundColor: 'rgba(54, 207, 201, 0.7)',
                             stack: 'Stack 0'
                         },
                         {
-                            label: '第二年利息',
+                            label: '第2年利息',
                             data: [0, 0, 864, 864, 864, 864],
                             backgroundColor: 'rgba(255, 125, 0, 0.7)',
                             stack: 'Stack 0'
                         },
                         {
-                            label: '第三年利息',
+                            label: '第3年利息',
                             data: [0, 0, 0, 933, 933, 933],
                             backgroundColor: 'rgba(72, 187, 120, 0.7)',
                             stack: 'Stack 0'
                         },
                         {
-                            label: '第四年利息',
+                            label: '第4年利息',
                             data: [0, 0, 0, 0, 1008, 1008],
                             backgroundColor: 'rgba(165, 81, 224, 0.7)',
                             stack: 'Stack 0'
                         },
                         {
-                            label: '第五年利息',
+                            label: '第5年利息',
                             data: [0, 0, 0, 0, 0, 1089],
                             backgroundColor: 'rgba(237, 100, 166, 0.7)',
                             stack: 'Stack 0'
@@ -825,7 +825,7 @@
                         },
                         title: {
                             display: true,
-                            text: '复利增长示意图（年利率8%）',
+                            text: '复利增长示意图（年利率 8 %）',
                             font: {
                                 size: 14,
                                 weight: 'bold'
@@ -860,7 +860,7 @@
                             stacked: true,
                             ticks: {
                                 callback: function(value) {
-                                    return '¥' + value;
+                                    return value;
                                 }
                             }
                         }
@@ -876,7 +876,7 @@
                     labels: Array.from({length: 36}, (_, i) => 25 + i),
                     datasets: [
                         {
-                            label: 'A（25岁开始）',
+                            label: ' A（25岁开始）',
                             data: calculateComparisonData(25, 60, 1000, 8),
                             borderColor: '#165DFF',
                             backgroundColor: 'rgba(22, 93, 255, 0.1)',
@@ -885,7 +885,7 @@
                             tension: 0.3
                         },
                         {
-                            label: 'B（35岁开始）',
+                            label: ' B（35岁开始）',
                             data: calculateComparisonData(35, 60, 1000, 8),
                             borderColor: '#FF7D00',
                             backgroundColor: 'rgba(255, 125, 0, 0.3)',
@@ -900,7 +900,7 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'top',
+                            position: 'chartArea',
                             labels: {
                                 usePointStyle: true,
                                 boxWidth: 8,
@@ -945,9 +945,9 @@
                             ticks: {
                                 callback: function(value) {
                                     if (value >= 10000) {
-                                        return '¥' + (value / 10000) + '万';
+                                        return (value / 10000) + '万';
                                     }
-                                    return '¥' + value;
+                                    return value;
                                 }
                             }
                         }
@@ -963,7 +963,7 @@
                     labels: Array.from({length: 31}, (_, i) => i),
                     datasets: [
                         {
-                            label: '6% 年利率',
+                            label: ' 6% 年利率',
                             data: calculateRateComparisonData(100000, 1000, 6, 30),
                             borderColor: '#86909C',
                             backgroundColor: 'transparent',
@@ -971,7 +971,7 @@
                             tension: 0.3
                         },
                         {
-                            label: '8% 年利率',
+                            label: ' 8% 年利率',
                             data: calculateRateComparisonData(100000, 1000, 8, 30),
                             borderColor: '#165DFF',
                             backgroundColor: 'transparent',
@@ -979,7 +979,7 @@
                             tension: 0.3
                         },
                         {
-                            label: '10% 年利率',
+                            label: ' 10% 年利率',
                             data: calculateRateComparisonData(100000, 1000, 10, 30),
                             borderColor: '#FF7D00',
                             backgroundColor: 'transparent',
@@ -993,7 +993,7 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'top',
+                            position: 'chartArea',
                             labels: {
                                 usePointStyle: true,
                                 boxWidth: 8,
@@ -1036,12 +1036,10 @@
                             },
                             ticks: {
                                 callback: function(value) {
-                                    if (value >= 1000000) {
-                                        return '¥' + (value / 1000000) + '百万';
-                                    } else if (value >= 10000) {
-                                        return '¥' + (value / 10000) + '万';
+                                    if (value >= 10000) {
+                                        return (value / 10000) + '万';
                                     }
-                                    return '¥' + value;
+                                    return value;
                                 }
                             }
                         }
@@ -1122,9 +1120,9 @@
                             ticks: {
                                 callback: function(value) {
                                     if (value >= 10000) {
-                                        return '¥' + (value / 10000) + '万';
+                                        return (value / 10000) + '万';
                                     }
-                                    return '¥' + value;
+                                    return value;
                                 }
                             },
                             grid: {
