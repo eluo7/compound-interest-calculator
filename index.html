@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>复利的力量 - 财富增长模拟器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        accent: '#FF7D00',
+                        neutral: '#86909C',
+                        dark: '#1D2129',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+            }
+            .param-input:focus {
+                @apply border-primary ring-2 ring-primary/20 outline-none;
+            }
+            .error-border {
+                @apply border-red-500 focus:border-red-500 focus:ring-red-200;
+            }
+            .formula-container::-webkit-scrollbar {
+                height: 6px;
+            }
+            .formula-container::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 10px;
+            }
+            .formula-container::-webkit-scrollbar-thumb {
+                background: #c1c1c1;
+                border-radius: 10px;
+            }
+            .formula-container::-webkit-scrollbar-thumb:hover {
+                background: #a1a1a1;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-md fixed w-full z-10 transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-line-chart text-primary text-2xl"></i>
+                <span class="text-xl font-bold text-primary">复利计算器</span>
+            </div>
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="#calculator" class="text-gray-600 hover:text-primary transition-colors">计算器</a>
+                <a href="#explanation" class="text-gray-600 hover:text-primary transition-colors">复利原理</a>
+                <a href="#examples" class="text-gray-600 hover:text-primary transition-colors">案例分析</a>
+            </div>
+            <button class="md:hidden text-gray-600 focus:outline-none" id="menu-toggle">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+        <!-- 移动端菜单 -->
+        <div class="md:hidden hidden bg-white shadow-lg absolute w-full" id="mobile-menu">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="#calculator" class="text-gray-600 hover:text-primary py-2 transition-colors">计算器</a>
+                <a href="#explanation" class="text-gray-600 hover:text-primary py-2 transition-colors">复利原理</a>
+                <a href="#examples" class="text-gray-600 hover:text-primary py-2 transition-colors">案例分析</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <header class="pt-24 pb-16 md:pt-32 md:pb-24 bg-gradient-to-br from-primary/5 to-secondary/5">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-dark mb-6 leading-tight">
+                    发现<span class="text-primary">复利</span>的惊人力量
+                </h1>
+                <p class="text-[clamp(1rem,2vw,1.25rem)] text-gray-600 mb-8 max-w-2xl mx-auto">
+                    时间+复利=财富增长的奇迹。通过我们的交互式计算器，直观感受长期投资的魅力，规划您的财富未来。
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="#calculator" class="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-8 rounded-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-primary/30">
+                        开始计算 <i class="fa fa-arrow-right ml-2"></i>
+                    </a>
+                    <a href="#explanation" class="bg-white hover:bg-gray-50 text-primary border border-primary font-medium py-3 px-8 rounded-lg transition-all transform hover:scale-105 shadow-md">
+                        了解原理 <i class="fa fa-book ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-12">
+        <!-- 计算器部分 -->
+        <section id="calculator" class="max-w-5xl mx-auto mb-20">
+            <div class="text-center mb-12">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">复利增长模拟器</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">调整下方参数，实时查看您的投资增长曲线，感受复利的神奇效应</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- 参数控制面板 -->
+                <div class="lg:col-span-1 bg-white rounded-xl p-6 card-shadow">
+                    <h3 class="text-xl font-semibold mb-6 flex items-center">
+                        <i class="fa fa-sliders text-primary mr-2"></i> 投资参数设置
+                    </h3>
+                    
+                    <div class="space-y-6">
+                        <!-- 初始投资 -->
+                        <div class="param-item">
+                            <label for="initialInvestmentInput" class="block text-gray-700 font-medium mb-2">初始投资</label>
+                            <div class="relative">
+                                <input 
+                                    type="number" 
+                                    id="initialInvestmentInput" 
+                                    min="0" 
+                                    step="100" 
+                                    class="param-input w-full px-4 py-3 border border-gray-300 rounded-lg pr-12 focus:transition-all"
+                                    placeholder="请输入金额"
+                                >
+                                <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">元</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 每月追加投资 -->
+                        <div class="param-item">
+                            <label for="monthlyContributionInput" class="block text-gray-700 font-medium mb-2">每月追加投资</label>
+                            <div class="relative">
+                                <input 
+                                    type="number" 
+                                    id="monthlyContributionInput" 
+                                    min="0" 
+                                    step="100" 
+                                    class="param-input w-full px-4 py-3 border border-gray-300 rounded-lg pr-12 focus:transition-all"
+                                    placeholder="请输入金额"
+                                >
+                                <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">元/月</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 预期年利率 -->
+                        <div class="param-item">
+                            <label for="interestRateInput" class="block text-gray-700 font-medium mb-2">预期年利率</label>
+                            <div class="relative">
+                                <input 
+                                    type="number" 
+                                    id="interestRateInput" 
+                                    min="0.1" 
+                                    max="20" 
+                                    step="0.1" 
+                                    class="param-input w-full px-4 py-3 border border-gray-300 rounded-lg pr-12 focus:transition-all"
+                                    placeholder="请输入利率"
+                                >
+                                <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 利率波动范围 -->
+                        <div class="param-item">
+                            <label for="rateVarianceInput" class="block text-gray-700 font-medium mb-2">利率波动范围</label>
+                            <div class="relative">
+                                <input 
+                                    type="number" 
+                                    id="rateVarianceInput" 
+                                    min="0" 
+                                    step="0.1" 
+                                    class="param-input w-full px-4 py-3 border border-gray-300 rounded-lg pr-12 focus:transition-all"
+                                    placeholder="请输入波动范围"
+                                >
+                                <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 复利频率 -->
+                        <div class="param-item">
+                            <label class="block text-gray-700 font-medium mb-2">复利频率</label>
+                            <div class="grid grid-cols-3 gap-3">
+                                <button class="compoundFrequencyBtn py-3 px-4 rounded-lg border border-gray-200 hover:border-primary hover:text-primary transition-colors" data-value="monthly">每月</button>
+                                <button class="compoundFrequencyBtn py-3 px-4 rounded-lg border border-gray-200 hover:border-primary hover:text-primary transition-colors" data-value="quarterly">每季度</button>
+                                <button class="compoundFrequencyBtn py-3 px-4 rounded-lg border border-primary bg-primary/5 text-primary" data-value="yearly">每年</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 投资年限 -->
+                        <div class="param-item">
+                            <label for="investmentYearsInput" class="block text-gray-700 font-medium mb-2">投资年限</label>
+                            <div class="relative">
+                                <input 
+                                    type="number" 
+                                    id="investmentYearsInput" 
+                                    min="1" 
+                                    step="1" 
+                                    class="param-input w-full px-4 py-3 border border-gray-300 rounded-lg pr-12 focus:transition-all"
+                                    placeholder="请输入年限"
+                                >
+                                <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">年</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 利率场景选择 -->
+                        <div class="param-item">
+                            <label class="block text-gray-700 font-medium mb-2">计算场景</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button class="scenarioBtn py-3 px-4 rounded-lg border border-primary bg-primary/5 text-primary" data-scenario="fixed">固定利率</button>
+                                <button class="scenarioBtn py-3 px-4 rounded-lg border border-gray-200 hover:border-primary hover:text-primary transition-colors" data-scenario="variable">波动利率</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 操作按钮 -->
+                        <div class="param-item pt-4 flex gap-3">
+                            <button id="calculateButton" class="flex-1 py-3 px-4 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition-colors flex items-center justify-center">
+                                <i class="fa fa-calculator mr-2"></i> 计算结果
+                            </button>
+                            <button id="resetParameters" class="py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors">
+                                <i class="fa fa-refresh"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- 错误提示 -->
+                        <div id="errorMessage" class="hidden text-red-500 text-sm p-3 bg-red-50 rounded-lg">
+                            <i class="fa fa-exclamation-circle mr-1"></i> <span id="errorText">请填写所有必填参数</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 结果展示区域 -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- 图表区域 -->
+                    <div class="bg-white rounded-xl p-6 card-shadow">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-semibold flex items-center">
+                                <i class="fa fa-area-chart text-primary mr-2"></i> 投资增长曲线对比
+                            </h3>
+                            <div class="flex space-x-3">
+                                <button id="downloadChart" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg transition-colors flex items-center" disabled>
+                                    <i class="fa fa-download mr-1"></i> 下载图表
+                                </button>
+                            </div>
+                        </div>
+                        <div class="h-[400px] flex items-center justify-center">
+                            <div id="chartPlaceholder" class="text-center text-gray-500">
+                                <i class="fa fa-bar-chart text-4xl mb-3 opacity-20"></i>
+                                <p>请填写参数并点击"计算结果"按钮生成图表</p>
+                            </div>
+                            <canvas id="investmentChart" class="hidden"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- 结果数据卡片 - 顺序：本息总额、总投入、利息收益 -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white rounded-xl p-6 card-shadow border-l-4 border-accent transform transition-all hover:scale-[1.02]">
+                            <h4 class="text-gray-500 text-sm mb-1">最终本息总额</h4>
+                            <p id="finalAmount" class="text-2xl font-bold">-</p>
+                            <p class="text-xs text-gray-500 mt-2">包含本金和所有累积利息</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 card-shadow border-l-4 border-primary transform transition-all hover:scale-[1.02]">
+                            <h4 class="text-gray-500 text-sm mb-1">总投入</h4>
+                            <p id="totalInvestment" class="text-2xl font-bold">-</p>
+                            <p class="text-xs text-gray-500 mt-2">初始投资 + 每月追加投资总和</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 card-shadow border-l-4 border-secondary transform transition-all hover:scale-[1.02]">
+                            <h4 class="text-gray-500 text-sm mb-1">利息收益</h4>
+                            <p id="interestEarned" class="text-2xl font-bold">-</p>
+                            <p class="text-xs text-gray-500 mt-2">本息总额 - 总投入金额</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 数据表格 -->
+                    <div class="bg-white rounded-xl p-6 card-shadow overflow-x-auto">
+                        <h3 class="text-xl font-semibold mb-4 flex items-center">
+                            <i class="fa fa-table text-primary mr-2"></i> 关键时间点数据
+                        </h3>
+                        <div id="tablePlaceholder" class="text-center text-gray-500 py-10">
+                            <p>计算结果将显示在这里</p>
+                        </div>
+                        <table id="resultTable" class="min-w-full divide-y divide-gray-200 hidden">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">投资时间</th>
+                                    <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">本息总额 (元)</th>
+                                    <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">总投入 (元)</th>
+                                    <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">收益倍数</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- 表格内容将通过JavaScript动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 复利原理解释 -->
+        <section id="explanation" class="max-w-4xl mx-auto mb-20">
+            <div class="text-center mb-12">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">复利的工作原理</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">理解复利如何让您的财富实现指数增长</p>
+            </div>
+            
+            <div class="bg-white rounded-xl p-8 card-shadow">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4">什么是复利？</h3>
+                        <p class="text-gray-600 mb-4">
+                            复利，俗称"利滚利"，是指在计算利息时，将本金产生的利息再次计入本金，使利息也能产生新的利息。这种增长方式随着时间推移会产生惊人的效果。
+                        </p>
+                        <p class="text-gray-600 mb-4">
+                            爱因斯坦曾说："复利是世界第八大奇迹。知之者赚，不知之者被赚。"这句话道出了复利在长期投资中的巨大威力。
+                        </p>
+                        
+                        <h3 class="text-xl font-semibold mt-6 mb-4">复利计算公式</h3>
+                        <!-- 响应式公式容器 -->
+                        <div class="relative my-4">
+                            <div class="formula-container overflow-x-auto bg-gray-50 rounded-lg p-4 shadow-sm transition-all duration-300">
+                                <div class="min-w-max">
+                                    <p class="text-center text-primary text-lg md:text-xl">
+                                        \( FV = P \times \left(1 + \frac{r}{n}\right)^{nt} + PMT \times \frac{\left(1 + \frac{r}{n}\right)^{nt} - 1}{\frac{r}{n}} \)
+                                    </p>
+                                </div>
+                            </div>
+                            <!-- 移动端提示 -->
+                            <p class="text-xs text-gray-500 text-center mt-2 md:hidden">
+                                <i class="fa fa-info-circle mr-1"></i> 左右滑动可查看完整公式
+                            </p>
+                        </div>
+                        <ul class="text-gray-600 space-y-2 text-sm">
+                            <li><span class="font-medium">FV</span> = 最终金额</li>
+                            <li><span class="font-medium">P</span> = 初始投资金额</li>
+                            <li><span class="font-medium">r</span> = 年利率（小数）</li>
+                            <li><span class="font-medium">n</span> = 每年复利次数</li>
+                            <li><span class="font-medium">t</span> = 投资时间（年）</li>
+                            <li><span class="font-medium">PMT</span> = 每期追加投资金额</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="relative">
+                        <div class="aspect-square max-w-md mx-auto relative z-10">
+                            <canvas id="compoundInterestIllustration"></canvas>
+                        </div>
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-primary/10 rounded-full -z-10"></div>
+                    </div>
+                </div>
+                
+                <div class="mt-12">
+                    <h3 class="text-xl font-semibold mb-6 text-center">复利增长的三大要素</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-gray-50 p-6 rounded-lg text-center transform transition-all hover:scale-105 hover:shadow-lg">
+                            <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fa fa-clock-o text-primary text-2xl"></i>
+                            </div>
+                            <h4 class="font-semibold mb-2">时间</h4>
+                            <p class="text-gray-600 text-sm">
+                                复利需要时间才能发挥最大效果。开始投资的时间比精确选择投资标的更为重要。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-6 rounded-lg text-center transform transition-all hover:scale-105 hover:shadow-lg">
+                            <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fa fa-percent text-primary text-2xl"></i>
+                            </div>
+                            <h4 class="font-semibold mb-2">收益率</h4>
+                            <p class="text-gray-600 text-sm">
+                                即使是小幅提高年化收益率，长期来看也会产生巨大的差异。保持稳定的收益率至关重要。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-6 rounded-lg text-center transform transition-all hover:scale-105 hover:shadow-lg">
+                            <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fa fa-plus-circle text-primary text-2xl"></i>
+                            </div>
+                            <h4 class="font-semibold mb-2">持续投入</h4>
+                            <p class="text-gray-600 text-sm">
+                                定期追加投资可以显著加速财富增长。养成持续投资的习惯，让时间成为您的朋友。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 案例分析 -->
+        <section id="examples" class="max-w-4xl mx-auto mb-20">
+            <div class="text-center mb-12">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">复利增长案例</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">看看不同投资策略下的财富增长对比</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white rounded-xl overflow-hidden card-shadow">
+                    <div class="h-48 bg-gradient-to-r from-primary to-secondary relative">
+                        <div class="absolute inset-0 bg-dark/40 flex items-center justify-center">
+                            <h3 class="text-white text-2xl font-bold">早期开始 vs 晚期开始</h3>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="h-64 mb-4">
+                            <canvas id="startTimeComparisonChart"></canvas>
+                        </div>
+                        <div class="text-gray-600 text-sm">
+                            <p class="mb-2"><span class="font-medium text-primary">案例说明：</span> A在25岁开始投资，每月投入1000元，年利率8%，坚持到60岁；B在35岁开始投资，每月投入相同金额和利率，坚持到60岁。</p>
+                            <p><span class="font-medium text-primary">结果对比：</span> A比B早开始10年，最终金额却多出约150万元，充分说明"时间"在复利增长中的关键作用。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl overflow-hidden card-shadow">
+                    <div class="h-48 bg-gradient-to-r from-accent to-secondary relative">
+                        <div class="absolute inset-0 bg-dark/40 flex items-center justify-center">
+                            <h3 class="text-white text-2xl font-bold">不同收益率对比</h3>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="h-64 mb-4">
+                            <canvas id="rateComparisonChart"></canvas>
+                        </div>
+                        <div class="text-gray-600 text-sm">
+                            <p class="mb-2"><span class="font-medium text-primary">案例说明：</span> 三位投资者初始投资10万元，每月追加1000元，投资30年，但年利率分别为6%、8%和10%。</p>
+                            <p><span class="font-medium text-primary">结果对比：</span> 年利率从6%提高到10%，最终金额相差近200万元，说明即使小幅提高收益率，长期效果也非常显著。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-dark text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="max-w-5xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                    <div>
+                        <div class="flex items-center space-x-2 mb-4">
+                            <i class="fa fa-line-chart text-primary text-2xl"></i>
+                            <span class="text-xl font-bold">复利计算器</span>
+                        </div>
+                        <p class="text-gray-400 text-sm">
+                            直观展示复利的力量，帮助您理解长期投资的价值，规划您的财富增长路径。
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-lg font-semibold mb-4">快速链接</h4>
+                        <ul class="space-y-2 text-gray-400">
+                            <li><a href="#calculator" class="hover:text-primary transition-colors">复利计算器</a></li>
+                            <li><a href="#explanation" class="hover:text-primary transition-colors">复利原理</a></li>
+                            <li><a href="#examples" class="hover:text-primary transition-colors">案例分析</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-lg font-semibold mb-4">免责声明</h4>
+                        <p class="text-gray-400 text-sm">
+                            本计算器仅作投资教育用途，所提供数据仅供参考，不构成任何投资建议。实际投资收益可能因市场波动等因素而有所不同。
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
+                    <p>© 2023 复利计算器 | 发现复利的力量</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // DOM元素引用
+        const initialInvestmentInput = document.getElementById('initialInvestmentInput');
+        const monthlyContributionInput = document.getElementById('monthlyContributionInput');
+        const interestRateInput = document.getElementById('interestRateInput');
+        const rateVarianceInput = document.getElementById('rateVarianceInput');
+        const investmentYearsInput = document.getElementById('investmentYearsInput');
+        const compoundFrequencyBtns = document.querySelectorAll('.compoundFrequencyBtn');
+        const scenarioBtns = document.querySelectorAll('.scenarioBtn');
+        const resetButton = document.getElementById('resetParameters');
+        const calculateButton = document.getElementById('calculateButton');
+        const downloadChartButton = document.getElementById('downloadChart');
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const navbar = document.getElementById('navbar');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const chartPlaceholder = document.getElementById('chartPlaceholder');
+        const investmentChartCanvas = document.getElementById('investmentChart');
+        const tablePlaceholder = document.getElementById('tablePlaceholder');
+        const resultTable = document.getElementById('resultTable');
+        
+        // 结果显示元素
+        const totalInvestmentElement = document.getElementById('totalInvestment');
+        const finalAmountElement = document.getElementById('finalAmount');
+        const interestEarnedElement = document.getElementById('interestEarned');
+        const resultTableBody = document.getElementById('resultTableBody');
+        
+        // 图表对象
+        let investmentChart = null;
+        let compoundInterestIllustrationChart = null;
+        let startTimeComparisonChart = null;
+        let rateComparisonChart = null;
+        
+        // 当前参数
+        let currentParameters = {
+            initialInvestment: null,
+            monthlyContribution: null,
+            interestRate: null,
+            rateVariance: null, 
+            compoundFrequency: 'yearly',
+            investmentYears: null,
+            scenario: 'fixed'
+        };
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化所有图表
+            initCharts();
+            
+            // 添加事件监听器
+            addEventListeners();
+            
+            // 处理MathJax加载完成后的公式渲染
+            if (window.MathJax) {
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+            }
+        });
+        
+        // 添加事件监听器
+        function addEventListeners() {
+            // 计算按钮点击事件
+            calculateButton.addEventListener('click', function() {
+                if (validateParameters()) {
+                    calculateAndUpdateResults();
+                }
+            });
+            
+            // 重置按钮点击事件
+            resetButton.addEventListener('click', function() {
+                resetParameters();
+            });
+            
+            // 复利频率按钮
+            compoundFrequencyBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    compoundFrequencyBtns.forEach(b => {
+                        b.classList.remove('border-primary', 'bg-primary/5', 'text-primary');
+                        b.classList.add('border-gray-200');
+                    });
+                    this.classList.remove('border-gray-200');
+                    this.classList.add('border-primary', 'bg-primary/5', 'text-primary');
+                    currentParameters.compoundFrequency = this.dataset.value;
+                });
+            });
+            
+            // 场景选择按钮
+            scenarioBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    scenarioBtns.forEach(b => {
+                        b.classList.remove('border-primary', 'bg-primary/5', 'text-primary');
+                        b.classList.add('border-gray-200');
+                    });
+                    this.classList.remove('border-gray-200');
+                    this.classList.add('border-primary', 'bg-primary/5', 'text-primary');
+                    currentParameters.scenario = this.dataset.scenario;
+                });
+            });
+            
+            // 下载图表按钮
+            downloadChartButton.addEventListener('click', function() {
+                if (investmentChart) {
+                    const originalCanvas = document.getElementById('investmentChart');
+                    
+                    // 创建临时canvas，设置背景为纯白色
+                    const tempCanvas = document.createElement('canvas');
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCanvas.width = originalCanvas.width;
+                    tempCanvas.height = originalCanvas.height;
+                    
+                    // 确保背景为完全不透明的白色
+                    tempCtx.fillStyle = '#ffffff';
+                    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                    
+                    // 确保绘制模式为覆盖，避免透明度叠加
+                    tempCtx.globalCompositeOperation = 'source-over';
+                    
+                    // 绘制原始图表内容
+                    tempCtx.drawImage(originalCanvas, 0, 0);
+                    
+                    // 创建下载链接
+                    const link = document.createElement('a');
+                    link.download = '复利增长图表.png';
+                    link.href = tempCanvas.toDataURL('image/png', 1.0);
+                    link.click();
+                    
+                    // 清理临时元素
+                    tempCanvas.remove();
+                }
+            });
+            
+            // 移动端菜单切换
+            menuToggle.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // 导航栏滚动效果
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('py-2', 'shadow-lg');
+                    navbar.classList.remove('py-3', 'shadow-md');
+                } else {
+                    navbar.classList.add('py-3', 'shadow-md');
+                    navbar.classList.remove('py-2', 'shadow-lg');
+                }
+            });
+            
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    
+                    // 关闭移动菜单（如果打开）
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                    
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        }
+        
+        // 验证参数
+        function validateParameters() {
+            // 清除之前的错误状态
+            errorMessage.classList.add('hidden');
+            const inputs = [initialInvestmentInput, monthlyContributionInput, interestRateInput, investmentYearsInput];
+            inputs.forEach(input => {
+                input.classList.remove('error-border');
+            });
+            
+            // 收集参数
+            const initialInvestment = parseFloat(initialInvestmentInput.value) || 0;
+            const monthlyContribution = parseFloat(monthlyContributionInput.value) || 0;
+            const interestRate = parseFloat(interestRateInput.value);
+            const rateVariance = parseFloat(rateVarianceInput.value) || 0;
+            const investmentYears = parseInt(investmentYearsInput.value);
+            
+            // 验证必填参数
+            let isValid = true;
+            let errorMessages = [];
+            
+            if (isNaN(interestRate) || interestRate < 0.1) {
+                errorMessages.push("预期年利率必须大于等于0.1%");
+                interestRateInput.classList.add('error-border');
+                isValid = false;
+            }
+            
+            if (isNaN(investmentYears) || investmentYears < 1) {
+                errorMessages.push("投资年限必须大于等于1年");
+                investmentYearsInput.classList.add('error-border');
+                isValid = false;
+            }
+            
+            // 如果初始投资和每月追加投资都为0，提示用户
+            if (initialInvestment === 0 && monthlyContribution === 0) {
+                errorMessages.push("初始投资和每月追加投资不能同时为0");
+                initialInvestmentInput.classList.add('error-border');
+                monthlyContributionInput.classList.add('error-border');
+                isValid = false;
+            }
+            
+            // 如果有错误，显示错误信息
+            if (!isValid) {
+                errorText.textContent = errorMessages.join('；');
+                errorMessage.classList.remove('hidden');
+                return false;
+            }
+            
+            // 更新当前参数
+            currentParameters = {
+                initialInvestment,
+                monthlyContribution,
+                interestRate,
+                rateVariance,
+                compoundFrequency: currentParameters.compoundFrequency,
+                investmentYears,
+                scenario: currentParameters.scenario
+            };
+            
+            return true;
+        }
+        
+        // 重置参数
+        function resetParameters() {
+            // 清空所有输入框
+            initialInvestmentInput.value = '';
+            monthlyContributionInput.value = '';
+            interestRateInput.value = '';
+            rateVarianceInput.value = '';
+            investmentYearsInput.value = '';
+            
+            // 重置按钮状态
+            compoundFrequencyBtns.forEach(btn => {
+                if (btn.dataset.value === 'yearly') {
+                    btn.classList.remove('border-gray-200');
+                    btn.classList.add('border-primary', 'bg-primary/5', 'text-primary');
+                } else {
+                    btn.classList.remove('border-primary', 'bg-primary/5', 'text-primary');
+                    btn.classList.add('border-gray-200');
+                }
+            });
+            
+            scenarioBtns.forEach(btn => {
+                if (btn.dataset.scenario === 'fixed') {
+                    btn.classList.remove('border-gray-200');
+                    btn.classList.add('border-primary', 'bg-primary/5', 'text-primary');
+                } else {
+                    btn.classList.remove('border-primary', 'bg-primary/5', 'text-primary');
+                    btn.classList.add('border-gray-200');
+                }
+            });
+            
+            // 重置当前参数
+            currentParameters = {
+                initialInvestment: null,
+                monthlyContribution: null,
+                interestRate: null,
+                rateVariance: null,
+                compoundFrequency: 'yearly',
+                investmentYears: null,
+                scenario: 'fixed'
+            };
+            
+            // 隐藏结果显示
+            chartPlaceholder.classList.remove('hidden');
+            investmentChartCanvas.classList.add('hidden');
+            tablePlaceholder.classList.remove('hidden');
+            resultTable.classList.add('hidden');
+            totalInvestmentElement.textContent = '-';
+            finalAmountElement.textContent = '-';
+            interestEarnedElement.textContent = '-';
+            errorMessage.classList.add('hidden');
+            
+            // 禁用下载按钮
+            downloadChartButton.disabled = true;
+        }
+        
+        // 初始化所有图表
+        function initCharts() {
+            // 复利原理示意图
+            const compoundInterestCtx = document.getElementById('compoundInterestIllustration').getContext('2d');
+            compoundInterestIllustrationChart = new Chart(compoundInterestCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['初始本金', '第1年', '第2年', '第3年', '第4年', '第5年'],
+                    datasets: [
+                        {
+                            label: '本金',
+                            data: [10000, 10000, 10000, 10000, 10000, 10000],
+                            backgroundColor: 'rgba(22, 93, 255, 0.7)',
+                            stack: 'Stack 0'
+                        },
+                        {
+                            label: '第一年利息',
+                            data: [0, 800, 800, 800, 800, 800],
+                            backgroundColor: 'rgba(54, 207, 201, 0.7)',
+                            stack: 'Stack 0'
+                        },
+                        {
+                            label: '第二年利息',
+                            data: [0, 0, 864, 864, 864, 864],
+                            backgroundColor: 'rgba(255, 125, 0, 0.7)',
+                            stack: 'Stack 0'
+                        },
+                        {
+                            label: '第三年利息',
+                            data: [0, 0, 0, 933, 933, 933],
+                            backgroundColor: 'rgba(72, 187, 120, 0.7)',
+                            stack: 'Stack 0'
+                        },
+                        {
+                            label: '第四年利息',
+                            data: [0, 0, 0, 0, 1008, 1008],
+                            backgroundColor: 'rgba(165, 81, 224, 0.7)',
+                            stack: 'Stack 0'
+                        },
+                        {
+                            label: '第五年利息',
+                            data: [0, 0, 0, 0, 0, 1089],
+                            backgroundColor: 'rgba(237, 100, 166, 0.7)',
+                            stack: 'Stack 0'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 6,
+                                font: {
+                                    size: 11
+                                },
+                                padding: 15
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '复利增长示意图（年利率8%）',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += '¥' + context.parsed.y;
+                                    }
+                                    return label;
+                                },
+                                title: function(context) {
+                                    return context[0].label + ': ¥' + context[0].dataset.data.reduce((a, b, i) => i <= context[0].dataIndex ? a + b : a, 0);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '¥' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 开始时间对比图表 - 增强B曲线的橙色透明度
+            const startTimeCtx = document.getElementById('startTimeComparisonChart').getContext('2d');
+            startTimeComparisonChart = new Chart(startTimeCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 36}, (_, i) => 25 + i),
+                    datasets: [
+                        {
+                            label: 'A（25岁开始）',
+                            data: calculateComparisonData(25, 60, 1000, 8),
+                            borderColor: '#165DFF',
+                            backgroundColor: 'rgba(22, 93, 255, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'B（35岁开始）',
+                            data: calculateComparisonData(35, 60, 1000, 8),
+                            borderColor: '#FF7D00',
+                            backgroundColor: 'rgba(255, 125, 0, 0.3)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 8,
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('zh-CN', { 
+                                            style: 'currency', 
+                                            currency: 'CNY',
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0
+                                        }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '年龄'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '累积金额 (元)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    if (value >= 10000) {
+                                        return '¥' + (value / 10000) + '万';
+                                    }
+                                    return '¥' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 收益率对比图表
+            const rateCtx = document.getElementById('rateComparisonChart').getContext('2d');
+            rateComparisonChart = new Chart(rateCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 31}, (_, i) => i),
+                    datasets: [
+                        {
+                            label: '6% 年利率',
+                            data: calculateRateComparisonData(100000, 1000, 6, 30),
+                            borderColor: '#86909C',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            tension: 0.3
+                        },
+                        {
+                            label: '8% 年利率',
+                            data: calculateRateComparisonData(100000, 1000, 8, 30),
+                            borderColor: '#165DFF',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            tension: 0.3
+                        },
+                        {
+                            label: '10% 年利率',
+                            data: calculateRateComparisonData(100000, 1000, 10, 30),
+                            borderColor: '#FF7D00',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 8,
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null && context.parsed.y !== 0) {
+                                        label += new Intl.NumberFormat('zh-CN', { 
+                                            style: 'currency', 
+                                            currency: 'CNY',
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0
+                                        }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '投资年限'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: { title: {
+                                display: true,
+                                text: '累积金额 (元)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    if (value >= 1000000) {
+                                        return '¥' + (value / 1000000) + '百万';
+                                    } else if (value >= 10000) {
+                                        return '¥' + (value / 10000) + '万';
+                                    }
+                                    return '¥' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 初始化投资图表 - 支持波动范围曲线
+        function initInvestmentChart() {
+            const investmentChartCtx = document.getElementById('investmentChart').getContext('2d');
+            investmentChart = new Chart(investmentChartCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 8,
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('zh-CN', { 
+                                            style: 'currency', 
+                                            currency: 'CNY',
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0
+                                        }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '投资增长曲线对比',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '投资时间 (年)'
+                            },
+                            grid: {
+                                display: false,
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '金额 (元)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    if (value >= 10000) {
+                                        return '¥' + (value / 10000) + '万';
+                                    }
+                                    return '¥' + value;
+                                }
+                            },
+                            grid: {
+                                borderDash: [2, 4],
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    },
+                    backgroundColor: '#ffffff'
+                }
+            });
+        }
+        
+        // 计算并更新结果 - 支持波动范围曲线
+        function calculateAndUpdateResults() {
+            // 获取当前参数
+            const {
+                initialInvestment,
+                monthlyContribution,
+                interestRate,
+                rateVariance,
+                compoundFrequency,
+                investmentYears,
+                scenario
+            } = currentParameters;
+            
+            // 计算复利数据
+            const resultData = calculateCompoundInterest(
+                initialInvestment,
+                monthlyContribution,
+                interestRate,
+                rateVariance,
+                compoundFrequency,
+                investmentYears,
+                scenario
+            );
+            
+            // 如果是第一次计算，初始化图表
+            if (!investmentChart) {
+                initInvestmentChart();
+            }
+            
+            // 更新图表，根据是否有波动范围决定是否显示边界曲线
+            if (scenario === 'variable' && rateVariance > 0 && resultData.upperData && resultData.lowerData) {
+                updateInvestmentChart(
+                    resultData.labels, 
+                    resultData.compoundData, 
+                    resultData.totalInvestmentData,
+                    resultData.upperData,
+                    resultData.lowerData
+                );
+            } else {
+                updateInvestmentChart(
+                    resultData.labels, 
+                    resultData.compoundData, 
+                    resultData.totalInvestmentData
+                );
+            }
+            
+            // 更新结果数字
+            const finalAmount = resultData.compoundData[resultData.compoundData.length - 1];
+            const totalInvestment = resultData.totalInvestmentData[resultData.totalInvestmentData.length - 1];
+            const interestEarned = finalAmount - totalInvestment;
+            
+            totalInvestmentElement.textContent = `¥${formatNumber(Math.round(totalInvestment))}`;
+            finalAmountElement.textContent = `¥${formatNumber(Math.round(finalAmount))}`;
+            interestEarnedElement.textContent = `¥${formatNumber(Math.round(interestEarned))}`;
+            
+            // 更新表格
+            updateResultTable(resultData.labels, resultData.compoundData, resultData.totalInvestmentData);
+            
+            // 显示结果区域，隐藏占位符
+            chartPlaceholder.classList.add('hidden');
+            investmentChartCanvas.classList.remove('hidden');
+            tablePlaceholder.classList.add('hidden');
+            resultTable.classList.remove('hidden');
+            
+            // 启用下载按钮
+            downloadChartButton.disabled = false;
+        }
+        
+        // 计算复利 - 支持波动范围边界计算
+        function calculateCompoundInterest(
+            principal, 
+            monthlyContribution, 
+            annualRate, 
+            rateVariance, 
+            compoundFrequency, 
+            years, 
+            scenario
+        ) {
+            // 根据复利频率确定每年的复利次数
+            let periodsPerYear;
+            switch(compoundFrequency) {
+                case 'monthly':
+                    periodsPerYear = 12;
+                    break;
+                case 'quarterly':
+                    periodsPerYear = 4;
+                    break;
+                case 'yearly':
+                default:
+                    periodsPerYear = 1;
+            }
+            
+            // 每期利率（年率/复利次数）
+            const baseRatePerPeriod = (annualRate / 100) / periodsPerYear;
+            
+            // 每期追加投资（月投资 * 12 / 复利次数）
+            const contributionPerPeriod = monthlyContribution * (12 / periodsPerYear);
+            
+            // 总周期数
+            const totalPeriods = years * periodsPerYear;
+            
+            // 存储结果数据
+            let balances = [];
+            let totalInvestments = [];
+            let labels = [];
+            
+            // 初始金额
+            let currentBalance = principal;
+            let totalInvestment = principal;
+            
+            // 记录初始值
+            balances.push(currentBalance);
+            totalInvestments.push(totalInvestment);
+            labels.push(0);
+            
+            // 对于波动场景，计算三条曲线：基础、+波动、-波动
+            let upperBalances = [];
+            let lowerBalances = [];
+            upperBalances.push(currentBalance);
+            lowerBalances.push(currentBalance);
+            
+            // 计算每个周期的本息
+            for (let period = 1; period <= totalPeriods; period++) {
+                // 根据场景确定当前利率
+                let currentRatePerPeriod;
+                let upperRatePerPeriod; // +波动利率
+                let lowerRatePerPeriod; // -波动利率
+                
+                if (scenario === 'variable' && rateVariance > 0) {
+                    // 波动利率场景：在预期利率±波动范围内随机生成
+                    const minRate = (annualRate - rateVariance) / 100;
+                    const maxRate = (annualRate + rateVariance) / 100;
+                    const randomAnnualRate = minRate + Math.random() * (maxRate - minRate);
+                    currentRatePerPeriod = randomAnnualRate / periodsPerYear;
+                    
+                    // 计算上下边界利率
+                    upperRatePerPeriod = (annualRate + rateVariance)/100 / periodsPerYear;
+                    lowerRatePerPeriod = (annualRate - rateVariance)/100 / periodsPerYear;
+                } else {
+                    // 固定利率场景
+                    currentRatePerPeriod = baseRatePerPeriod;
+                }
+                
+                // 计算利息并加入本金
+                currentBalance = currentBalance * (1 + currentRatePerPeriod);
+                
+                // 追加投资
+                currentBalance += contributionPerPeriod;
+                totalInvestment += contributionPerPeriod;
+                
+                // 每年记录一次数据
+                if (period % periodsPerYear === 0) {
+                    const year = period / periodsPerYear;
+                    balances.push(currentBalance);
+                    totalInvestments.push(totalInvestment);
+                    labels.push(year);
+                    
+                    // 如果是波动场景，计算并记录边界数据
+                    if (scenario === 'variable' && rateVariance > 0) {
+                        // 计算上边界
+                        let upperBalance = upperBalances[upperBalances.length - 1];
+                        upperBalance = upperBalance * (1 + upperRatePerPeriod) + contributionPerPeriod;
+                        upperBalances.push(upperBalance);
+                        
+                        // 计算下边界
+                        let lowerBalance = lowerBalances[lowerBalances.length - 1];
+                        lowerBalance = lowerBalance * (1 + lowerRatePerPeriod) + contributionPerPeriod;
+                        lowerBalances.push(lowerBalance);
+                    }
+                }
+            }
+            
+            // 如果是波动场景，返回包含边界数据的结果
+            if (scenario === 'variable' && rateVariance > 0) {
+                return {
+                    labels: labels,
+                    compoundData: balances,
+                    upperData: upperBalances,
+                    lowerData: lowerBalances,
+                    totalInvestmentData: totalInvestments
+                };
+            }
+            
+            return {
+                labels: labels,
+                compoundData: balances,
+                totalInvestmentData: totalInvestments
+            };
+        }
+        
+        // 更新投资图表 - 支持波动范围曲线
+        function updateInvestmentChart(labels, compoundData, totalInvestmentData, upperData, lowerData) {
+            // 清除原有数据集
+            investmentChart.data.datasets = [];
+            
+            // 添加基础曲线
+            investmentChart.data.datasets.push({
+                label: '复利本息总额（预期）',
+                data: compoundData,
+                borderColor: '#165DFF',
+                backgroundColor: 'rgba(22, 93, 255, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 0,
+                pointHoverRadius: 5
+            });
+            
+            // 如果有波动范围数据，添加上下边界曲线
+            if (upperData && lowerData) {
+                investmentChart.data.datasets.push({
+                    label: `复利本息总额（+${currentParameters.rateVariance}%）`,
+                    data: upperData,
+                    borderColor: '#36CFC9',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.3,
+                    pointRadius: 0,
+                    pointHoverRadius: 5
+                });
+                
+                investmentChart.data.datasets.push({
+                    label: `复利本息总额（-${currentParameters.rateVariance}%）`,
+                    data: lowerData,
+                    borderColor: '#FF7D00',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.3,
+                    pointRadius: 0,
+                    pointHoverRadius: 5
+                });
+            }
+            
+            // 添加总投入曲线
+            investmentChart.data.datasets.push({
+                label: '总投入',
+                data: totalInvestmentData,
+                borderColor: '#86909C',
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                fill: false,
+                tension: 0,
+                pointRadius: 0,
+                pointHoverRadius: 5
+            });
+            
+            investmentChart.data.labels = labels;
+            investmentChart.update();
+        }
+        
+        // 更新结果表格
+        function updateResultTable(labels, compoundData, totalInvestmentData) {
+            // 清空表格
+            resultTableBody.innerHTML = '';
+            
+            // 确定要显示的数据点（最多显示10个点）
+            const totalPoints = labels.length;
+            const step = Math.max(1, Math.floor(totalPoints / 10));
+            
+            // 添加数据行
+            for (let i = 0; i < totalPoints; i += step) {
+                const year = labels[i];
+                const amount = compoundData[i]; // 本息总额
+                const investment = totalInvestmentData[i]; // 总投入
+                const multiple = investment > 0 ? (amount / investment).toFixed(2) : '0.00';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap">${year}年</td>
+                    <td class="px-4 py-3 whitespace-nowrap font-medium text-primary">${formatNumber(Math.round(amount))}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">${formatNumber(Math.round(investment))}</td>
+                    <td class="px-4 py-3 whitespace-nowrap ${multiple > 1 ? 'text-green-500' : 'text-gray-500'}">${multiple}x</td>
+                `;
+                resultTableBody.appendChild(row);
+            }
+        }
+        
+        // 格式化数字为带千分位的格式
+        function formatNumber(num) {
+            return new Intl.NumberFormat('zh-CN').format(num);
+        }
+        
+        // 计算开始时间对比数据
+        function calculateComparisonData(startAge, endAge, monthlyContribution, annualRate) {
+            const data = [];
+            let balance = 0;
+            
+            for (let age = startAge; age <= endAge; age++) {
+                // 每年计算一次
+                balance = balance * (1 + annualRate / 100) + monthlyContribution * 12;
+                data.push(balance);
+            }
+            
+            return data;
+        }
+        
+        // 计算利率对比数据
+        function calculateRateComparisonData(initialInvestment, monthlyContribution, annualRate, years) {
+            const data = [initialInvestment]; // 第0年
+            let balance = initialInvestment;
+            
+            for (let year = 1; year <= years; year++) {
+                balance = balance * (1 + annualRate / 100) + monthlyContribution * 12;
+                data.push(balance);
+            }
+            
+            return data;
+        }
+    </script>
+</body>
+</html>
