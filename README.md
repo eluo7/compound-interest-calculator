@@ -20,6 +20,10 @@ A web-based compound interest calculator that helps users visualize investment g
 - Font Awesome (v6.4.2)
 - MathJax (v3)
 
+## Live Demo
+
+Visit the calculator at: **[www.hashstudio.space](https://www.hashstudio.space)**
+
 ## Usage
 
 1. Fill in your investment parameters in the "Investment Settings" section
@@ -77,6 +81,10 @@ MIT License
 - Chart.js (v4.4.8)
 - Font Awesome (v6.4.2)
 - MathJax (v3)
+
+## 在线演示
+
+访问计算器：**[www.hashstudio.space](https://www.hashstudio.space)**
 
 ## 使用说明
 
